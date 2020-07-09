@@ -8,7 +8,7 @@ import numpy as np
 import scipy.misc as misc
 
 from torch.utils import data
-from torchstat import stat
+# from torchstat import stat
 from pytorch_bn_fusion.bn_fusion import fuse_bn_recursively
 
 from ptsemseg.models import get_model
@@ -46,7 +46,7 @@ def validate(cfg, args):
     # Setup Model
 
     model = get_model(cfg["model"], n_classes).to(device)
-    state = convert_state_dict(torch.load(args.model_path)["model_state"])
+    state = convert_state_dict(torch.load(args.model_path, map_location=device)["model_state"])
     model.load_state_dict(state)
     
     if args.bn_fusion:
@@ -171,7 +171,8 @@ if __name__ == "__main__":
         "--model_path",
         nargs="?",
         type=str,
-        default="hardnet_cityscapes_best_model.pkl",
+        default="./models/hardnet70_cityscapes_model.pkl",
+        # default="hardnet_cityscapes_best_model.pkl",
         help="Path to the saved model",
     )
     parser.add_argument(

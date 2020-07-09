@@ -13,9 +13,9 @@ import cv2
 
 def init_model(args):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    data_loader = get_loader("icboard")
+    data_loader = get_loader("cityscapes")
     loader = data_loader(
-        root=None,
+        root='./Cityscapes',
         is_transform=True,
         img_size=eval(args.size),
         test_mode=True
@@ -30,7 +30,6 @@ def init_model(args):
     model.to(device)
 
     return device, model, loader
-
 
 def test(args):
     device, model, loader = init_model(args)
@@ -82,6 +81,7 @@ def process_img(img_path, size, device, model, loader):
     outputs = model(images)
     pred = np.squeeze(outputs.data.max(1)[1].cpu().numpy(), axis=0)
     decoded = loader.decode_segmap(pred)
+    decoded = decoded*std+mean
 
     return img_resized, decoded
 
@@ -91,7 +91,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--model_path",
         type=str,
-        required=True,
+        # required=True,
+        default="./models/hardnet70_cityscapes_model.pkl",
         help="Path to the saved model",
     )
 
@@ -110,10 +111,10 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "--input", nargs="?", type=str, default=None, help="Path of the input image/ directory"
+        "--input", nargs="?", type=str, default='./imgs', help="Path of the input image/ directory"
     )
     parser.add_argument(
-        "--output", nargs="?", type=str, default="./", help="Path of the output directory"
+        "--output", nargs="?", type=str, default="./output", help="Path of the output directory"
     )
     args = parser.parse_args()
     test(args)
